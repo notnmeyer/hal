@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/amimof/huego"
 	"github.com/hekmon/plexwebhooks"
@@ -14,8 +15,7 @@ func initHue() *huego.Bridge {
 	if err != nil {
 		panic(err.Error())
 	}
-	user := "NQ8pRPGSLMOsizk9Z6m903xPrEgB47tggUdrwX-4"
-	return huego.New(bridge.Host, user)
+	return huego.New(bridge.Host, os.Getenv("HUE_USER"))
 }
 
 func initLogger() *zap.SugaredLogger {
