@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/notnmeyer/hal/internal/hue"
 	l "github.com/notnmeyer/hal/internal/logger"
@@ -15,10 +17,15 @@ func main() {
 	bridge := hue.New()
 	logger.Info("Hue client initialized")
 
+	// routes
 	http.HandleFunc("/", healthHandler)
 	http.HandleFunc("/healthcheck", healthHandler)
 	http.HandleFunc("/plex", plex.WebhookHandler(logger, bridge))
-	http.ListenAndServe(":7095", http.DefaultServeMux)
+
+	// start the server
+	listenOn := fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT"))
+	logger.Infof("Listening on %s", listenOn)
+	http.ListenAndServe(listenOn, http.DefaultServeMux)
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {

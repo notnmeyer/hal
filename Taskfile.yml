@@ -18,13 +18,13 @@ tasks:
     - go mod tidy
 
   docker:build:
-    - docker build -t hal -f build/Dockerfile .
+    - docker compose -f build/docker-compose.yml build
 
   docker:run:
     deps:
       - docker:build
     cmds:
-      - docker run --rm -p 7095:7095 hal
+      - docker compose -f build/docker-compose.yml run --service-ports hal
     sources:
       - "**/*.go"
       - go.mod

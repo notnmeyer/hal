@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  hal:
+    image: hal:latest
+    build:
+      context: ../
+      dockerfile: build/Dockerfile
+    env_file:
+      - ../configs/env/default.env
+    ports:
+      - 7095:7095
+

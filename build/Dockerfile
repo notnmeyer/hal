@@ -9,4 +9,8 @@ COPY --from=build --chown=root:root /tmp/build/hal /usr/local/bin/hal
 RUN addgroup -g 1000 app && \
     adduser -u 1000 -G app -h /home/app -D app
 USER app
+ENV PORT=7950 \
+    PLEX_CLIENT_NAME="" \
+    HUE_MEDIA_ROOM_GROUP=""
+EXPOSE 7950
 CMD ["/usr/local/bin/hal"]
