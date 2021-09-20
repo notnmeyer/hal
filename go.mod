@@ -1,4 +1,4 @@
-module github.com/notnmeyer/plex-webhooks-test
+module github.com/notnmeyer/hal
 
 go 1.17
 

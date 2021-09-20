@@ -1,4 +1,4 @@
-package main
+package plex
 
 import (
 	"fmt"
@@ -8,39 +8,11 @@ import (
 	"github.com/amimof/huego"
 	"github.com/hekmon/plexwebhooks"
 	"go.uber.org/zap"
+
+	"github.com/notnmeyer/hal/internal/hue"
 )
 
-func initHue() *huego.Bridge {
-	var bridge, err = huego.Discover()
-	if err != nil {
-		panic(err.Error())
-	}
-	return huego.New(bridge.Host, os.Getenv("HUE_USER"))
-}
-
-func initLogger() *zap.SugaredLogger {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err.Error())
-	}
-	sugar := logger.Sugar()
-	return sugar
-}
-
-func main() {
-	logger := initLogger()
-	logger.Info("Logger initialized")
-
-	bridge := initHue()
-	logger.Info("Hue client initialized")
-
-	http.HandleFunc("/", healthHandler)
-	http.HandleFunc("/healthcheck", healthHandler)
-	http.HandleFunc("/plex", plexWebhookHandler(logger, bridge))
-	http.ListenAndServe(":7095", http.DefaultServeMux)
-}
-
-func plexWebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.HandlerFunc {
+func WebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -77,23 +49,14 @@ func plexWebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.Ha
 		}
 		// spew.Dump("%#v\n", *payload)
 
-		//
-		// Bonus Room
-		//
-		if payload.Player.Title == "Bonus room" { // "Bonus room" is correct for the Plex player
-			// get the hue group
-			group := initBonusRoom(logger, bridge)
+		if payload.Player.Title == os.Getenv("PLEX_CLIENT_NAME") {
+			group := hue.InitBonusRoom(logger, bridge)
 			switch event := payload.Event; event {
 			case "media.play", "media.resume":
-				bonusRoomOn(logger, group)
+				hue.BonusRoomOn(logger, group)
 			case "media.stop", "media.pause":
-				bonusRoomOff(logger, group)
+				hue.BonusRoomOff(logger, group)
 			}
 		}
 	}
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
 }

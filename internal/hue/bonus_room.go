@@ -1,17 +1,15 @@
-package main
+package hue
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/amimof/huego"
 	"go.uber.org/zap"
 )
 
-func initBonusRoom(logger *zap.SugaredLogger, bridge *huego.Bridge) huego.Group {
-	var (
-		bonusRoomGroup     huego.Group
-		bonusRoomGroupName string = "Bonus Room"
-	)
+func InitBonusRoom(logger *zap.SugaredLogger, bridge *huego.Bridge) huego.Group {
+	var bonusRoomGroup huego.Group
 
 	groups, err := bridge.GetGroups()
 	if err != nil {
@@ -20,21 +18,22 @@ func initBonusRoom(logger *zap.SugaredLogger, bridge *huego.Bridge) huego.Group 
 
 	// find the specific group
 	for _, group := range groups {
-		if group.Name == bonusRoomGroupName {
+		if group.Name == os.Getenv("HUE_MEDIA_ROOM_GROUP") {
 			bonusRoomGroup = group
-			logger.Debugf("Group `%s` found", group.Name)
+			break
 		}
 	}
 
+	// TODO: do something with failure case when no matching group
 	return bonusRoomGroup
 }
 
-func bonusRoomOn(logger *zap.SugaredLogger, group huego.Group) {
+func BonusRoomOn(logger *zap.SugaredLogger, group huego.Group) {
 	logger.Infof("Turning off lights in Bonus Room: %s", group.Name)
 	group.Off()
 }
 
-func bonusRoomOff(logger *zap.SugaredLogger, group huego.Group) {
+func BonusRoomOff(logger *zap.SugaredLogger, group huego.Group) {
 	logger.Infof("Turning on lights in Bonus Room: %s", group.Name)
 	group.Bri(10)
 	group.On()

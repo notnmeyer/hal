@@ -7,9 +7,9 @@ tasks:
     deps:
       - go:mod:tidy
     cmds:
-      - go run *.go
+      - go run ./cmd/hal
     sources:
-      - "*.go"
+      - "**/*.go"
       - "go.mod"
 
   go:mod:tidy:
