@@ -34,11 +34,13 @@ func main() {
 	bridge := initHue()
 	logger.Info("Hue client initialized")
 
-	http.HandleFunc("/", webhookHandler(logger, bridge))
+	http.HandleFunc("/", healthHandler)
+	http.HandleFunc("/healthcheck", healthHandler)
+	http.HandleFunc("/plex", plexWebhookHandler(logger, bridge))
 	http.ListenAndServe(":7095", http.DefaultServeMux)
 }
 
-func webhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.HandlerFunc {
+func plexWebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -89,4 +91,9 @@ func webhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.Handle
 			}
 		}
 	}
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
