@@ -14,3 +14,6 @@ tasks:
 
   go:mod:tidy:
     - go mod tidy
+
+  docker:build:
+    - docker build -t hal -f build/Dockerfile .
