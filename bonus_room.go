@@ -8,8 +8,10 @@ import (
 )
 
 func initBonusRoom(logger *zap.SugaredLogger, bridge *huego.Bridge) huego.Group {
-	var bonusRoomGroup huego.Group
-	var bonusRoomGroupName = "Bonus Room"
+	var (
+		bonusRoomGroup     huego.Group
+		bonusRoomGroupName string = "Bonus Room"
+	)
 
 	groups, err := bridge.GetGroups()
 	if err != nil {
