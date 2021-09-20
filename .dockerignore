@@ -5,3 +5,4 @@ taskfile.yml
 .git
 .gitignore
 build
+docs
