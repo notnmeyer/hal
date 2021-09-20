@@ -1,7 +1,7 @@
 FROM golang:1.17-alpine as build
+COPY . /tmp/hal/
 WORKDIR /tmp/hal
-COPY . .
-RUN cd /tmp/hal && go mod tidy
+RUN go mod tidy
 RUN go build -o /tmp/build/hal ./cmd/hal
 
 FROM alpine:latest

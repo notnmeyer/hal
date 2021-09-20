@@ -1,6 +1,8 @@
 version: 3
 
-dotenv: ["configs/env/default.env", "configs/env/{{.ENV}}.env"]
+dotenv:
+  - "configs/env/default.env"
+  - "configs/env/{{.ENV}}.env"
 
 tasks:
   go:run:
@@ -10,10 +12,20 @@ tasks:
       - go run ./cmd/hal
     sources:
       - "**/*.go"
-      - "go.mod"
+      - go.mod
 
   go:mod:tidy:
     - go mod tidy
 
   docker:build:
     - docker build -t hal -f build/Dockerfile .
+
+  docker:run:
+    deps:
+      - docker:build
+    cmds:
+      - docker run --rm -p 7095:7095 hal
+    sources:
+      - "**/*.go"
+      - go.mod
+      - build/*
