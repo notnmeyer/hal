@@ -23,7 +23,7 @@ func main() {
 	http.HandleFunc("/plex", plex.WebhookHandler(logger, bridge))
 
 	// start the server
-	listenOn := fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT"))
+	listenOn := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	logger.Infof("Listening on %s", listenOn)
 	http.ListenAndServe(listenOn, http.DefaultServeMux)
 }
