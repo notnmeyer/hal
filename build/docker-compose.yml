@@ -10,4 +10,5 @@ services:
       - ../configs/env/default.env
     ports:
       - 7095:7095
+    restart: on-failure
 
