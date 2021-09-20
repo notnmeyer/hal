@@ -1,0 +1,15 @@
+version: 3
+
+tasks:
+  go:run:
+    deps:
+      - go:mod:tidy
+    cmds:
+      - go run *.go
+    sources:
+      - "*.go"
+      - "go.mod"
+
+
+  go:mod:tidy:
+    - go mod tidy
