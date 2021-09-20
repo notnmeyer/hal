@@ -1,0 +1,7 @@
+.task
+.vscode
+**/*.md
+taskfile.yml
+.git
+.gitignore
+build
