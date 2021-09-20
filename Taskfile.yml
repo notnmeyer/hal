@@ -1,6 +1,6 @@
 version: 3
 
-dotenv: [".env", "{{.ENV}}/.env."]
+dotenv: ["configs/env/default.env", "configs/env/{{.ENV}}.env"]
 
 tasks:
   go:run:
