@@ -29,3 +29,11 @@ tasks:
       - "**/*.go"
       - go.mod
       - build/*
+
+  docker:up:
+    cmds:
+      - docker compose -f build/docker-compose.yml up -d --remove-orphans
+
+  docker:down:
+    cmds:
+      - docker compose -f build/docker-compose.yml down --remove-orphans
