@@ -6,6 +6,7 @@ dotenv:
 
 tasks:
   go:run:
+    desc: Run without a container
     deps:
       - go:mod:tidy
     cmds:
@@ -15,12 +16,17 @@ tasks:
       - go.mod
 
   go:mod:tidy:
-    - go mod tidy
+    desc: Install deps
+    cmds:
+      - go mod tidy
 
   docker:build:
-    - docker compose -f build/docker-compose.yml build
+    desc: Build container image
+    cmds:
+      - docker compose -f build/docker-compose.yml build
 
   docker:run:
+    desc: Run in a container
     deps:
       - docker:build
     cmds:
@@ -31,9 +37,11 @@ tasks:
       - build/*
 
   docker:up:
+    desc: docker-compose up
     cmds:
       - docker compose -f build/docker-compose.yml up -d --remove-orphans
 
   docker:down:
+    desc: docker-compose down
     cmds:
       - docker compose -f build/docker-compose.yml down --remove-orphans
