@@ -39,9 +39,15 @@ tasks:
   docker:up:
     desc: docker-compose up
     cmds:
-      - docker compose -f build/docker-compose.yml up -d --remove-orphans
+      - docker compose -f build/docker-compose.yml up -d --build --remove-orphans
 
   docker:down:
-    desc: docker-compose down
+    desc: docker compose down
     cmds:
       - docker compose -f build/docker-compose.yml down --remove-orphans
+
+  dc:
+    desc: docker compose {{.CLI_ARGS}}
+    cmds:
+      - docker compose -f build/docker-compose.yml {{.CLI_ARGS}}
+    
