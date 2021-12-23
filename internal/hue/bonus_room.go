@@ -35,6 +35,6 @@ func BonusRoomOn(logger *zap.SugaredLogger, group huego.Group) {
 
 func BonusRoomOff(logger *zap.SugaredLogger, group huego.Group) {
 	logger.Infof("Turning on lights in Bonus Room: %s", group.Name)
-	group.Bri(10)
+	group.Bri(60)
 	group.On()
 }
