@@ -16,31 +16,23 @@ func WebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		payload, err := getRequestPayload(logger, w, r)
+		// see docs/plex_payload_example.md
+		payload, err := getRequestPayload(w, r)
 		if err != nil {
 			logger.Errorf("Error getting request payload: %s", err.Error())
 			return
 		}
 
-		// spew.Dump("%#v\n", *payload)
-
-		if payload.Player.Title == os.Getenv("PLEX_CLIENT_NAME") {
-			group := hue.InitBonusRoom(logger, bridge)
-			switch event := payload.Event; event {
-			case "media.play", "media.resume":
-				hue.BonusRoomOff(logger, group)
-				logger.Infof("handling `%s` event", event)
-			case "media.stop", "media.pause":
-				hue.BonusRoomOn(logger, group)
-				logger.Infof("handling `%s` event", event)
-			default:
-				logger.Infof("ignoring `%s` event", event)
+		if payload.Player.Title == os.Getenv("BONUS_ROOM_PLEX_CLIENT_NAME") {
+			err := hue.EventHandler(logger, bridge, payload, os.Getenv("BONUS_ROOM_HUE"))
+			if err != nil {
+				logger.Errorf("Error handling event: %s", err.Error())
 			}
 		}
 	}
 }
 
-func getRequestPayload(logger *zap.SugaredLogger, w http.ResponseWriter, r *http.Request) (*plexwebhooks.Payload, error) {
+func getRequestPayload(w http.ResponseWriter, r *http.Request) (*plexwebhooks.Payload, error) {
 	multiPartReader, err := r.MultipartReader()
 	if err != nil {
 		if err == http.ErrNotMultipart || err == http.ErrMissingBoundary {
