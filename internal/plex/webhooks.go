@@ -28,10 +28,10 @@ func WebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.Handle
 			group := hue.InitBonusRoom(logger, bridge)
 			switch event := payload.Event; event {
 			case "media.play", "media.resume":
-				hue.BonusRoomOn(logger, group)
+				hue.BonusRoomOff(logger, group)
 				logger.Infof("handling `%s` event", event)
 			case "media.stop", "media.pause":
-				hue.BonusRoomOff(logger, group)
+				hue.BonusRoomOn(logger, group)
 				logger.Infof("handling `%s` event", event)
 			default:
 				logger.Infof("ignoring `%s` event", event)

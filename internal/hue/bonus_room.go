@@ -28,12 +28,12 @@ func InitBonusRoom(logger *zap.SugaredLogger, bridge *huego.Bridge) huego.Group 
 	return bonusRoomGroup
 }
 
-func BonusRoomOn(logger *zap.SugaredLogger, group huego.Group) {
+func BonusRoomOff(logger *zap.SugaredLogger, group huego.Group) {
 	logger.Infof("Turning off lights in Bonus Room: %s", group.Name)
 	group.Off()
 }
 
-func BonusRoomOff(logger *zap.SugaredLogger, group huego.Group) {
+func BonusRoomOn(logger *zap.SugaredLogger, group huego.Group) {
 	logger.Infof("Turning on lights in Bonus Room: %s", group.Name)
 	group.Bri(10)
 	group.On()
