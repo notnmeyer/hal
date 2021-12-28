@@ -1,13 +1,17 @@
 package hue
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/amimof/huego"
+	"github.com/go-redis/redis/v8"
 	"github.com/hekmon/plexwebhooks"
 	"go.uber.org/zap"
 )
+
+var ctx = context.Background()
 
 func New() *huego.Bridge {
 	var bridge, err = huego.Discover()
@@ -23,7 +27,6 @@ func GetGroup(bridge *huego.Bridge, groupName string) (huego.Group, error) {
 		return huego.Group{}, fmt.Errorf("error getting groups: %s", err.Error())
 	}
 
-	// find the specific group
 	for _, group := range groups {
 		if group.Name == groupName {
 			return group, nil
@@ -47,10 +50,24 @@ func EventHandler(
 	switch event := payload.Event; event {
 	case "media.play", "media.resume":
 		logger.Infof("handling `%s` event", event)
-		GroupOff(&group)
-	case "media.stop", "media.pause":
+		GroupOff(&group, string(event))
+	case "media.stop":
+		// if the hue group is off, and the previous event we handled was "media.pause",
+		// then the stop event is probably coming as a result of the device turning off.
+		// in this situation don't turn the lights back on.
+		if !group.GroupState.AnyOn {
+			logger.Info("skipping `%s` event because previous event was `media.pause`", event)
+			return nil
+		}
+
+		if readHistory(group.Name) == "media.pause" {
+			logger.Info("skipping `%s` event because previous event was `media.pause`", event)
+			return nil
+		}
+		fallthrough
+	case "media.pause":
 		logger.Infof("handling `%s` event", event)
-		GroupOn(&group, 60)
+		GroupOn(&group, 60, string(event))
 	default:
 		logger.Infof("ignoring `%s` event", event)
 	}
@@ -58,15 +75,32 @@ func EventHandler(
 	return nil
 }
 
-func GroupOn(group *huego.Group, brightness uint8) {
+func GroupOn(group *huego.Group, brightness uint8, event string) {
 	group.Bri(brightness)
 	group.On()
+	updateHistory(group.Name, event)
 }
 
-func GroupOff(group *huego.Group) {
+func GroupOff(group *huego.Group, event string) {
 	group.Off()
+	updateHistory(group.Name, event)
 }
 
-// if a video is paused before sleeping the apple tv a stop event will be sent a few minutes later.
-// if everything is turned off (including lights) the stop event is handled and the lights
-// are mysteriously turned on.
+func redisClient() *redis.Client {
+	opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err.Error())
+	}
+	return redis.NewClient(opts)
+}
+
+// writes the last plex event type to redis for the hue group
+func updateHistory(hueGroupName, plexEvent string) {
+	rdb := redisClient()
+	rdb.HSet(ctx, "history", hueGroupName, plexEvent)
+}
+
+func readHistory(hueGroupName string) string {
+	rdb := redisClient()
+	return rdb.HGet(ctx, "history", hueGroupName).Val()
+}
