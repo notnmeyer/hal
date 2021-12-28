@@ -52,16 +52,11 @@ func EventHandler(
 		logger.Infof("handling `%s` event", event)
 		GroupOff(&group, string(event))
 	case "media.stop":
-		// if the hue group is off, and the previous event we handled was "media.pause",
-		// then the stop event is probably coming as a result of the device turning off.
-		// in this situation don't turn the lights back on.
-		if !group.GroupState.AnyOn {
-			logger.Info("skipping `%s` event because previous event was `media.pause`", event)
-			return nil
-		}
-
+		// if the previous event was "media.pause", then the stop event is
+		// may be received as a result of the device turning off. in any case,
+		// we don't need to turn the lights back on in that situation.
 		if readHistory(group.Name) == "media.pause" {
-			logger.Info("skipping `%s` event because previous event was `media.pause`", event)
+			logger.Infof("skipping `%s` event because previous event was `media.pause`", event)
 			return nil
 		}
 		fallthrough
