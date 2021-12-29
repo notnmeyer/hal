@@ -11,7 +11,8 @@ RUN addgroup -g 1000 app && \
 USER app
 ENV BONUS_ROOM_HUE="" \
     BONUS_ROOM_PLEX_CLIENT_NAME="" \
-    HUE_USER="" \
-    PORT="7950"
+    HUE_USER=""  \
+    PORT="7950" \
+    REDIS_URL="redis://localhost:6379/0"
 EXPOSE 7950
 CMD ["/usr/local/bin/hal"]
