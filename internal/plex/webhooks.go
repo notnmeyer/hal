@@ -16,51 +16,45 @@ func WebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		// Create the multi part reader
-		multiPartReader, err := r.MultipartReader()
+		// see docs/plex_payload_example.md
+		payload, err := getRequestPayload(w, r)
 		if err != nil {
-			// Detect error type for the http answer
-			if err == http.ErrNotMultipart || err == http.ErrMissingBoundary {
-				w.WriteHeader(http.StatusBadRequest)
-			} else {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			// Try to write the error as http body
-			_, wErr := w.Write([]byte(err.Error()))
-			if wErr != nil {
-				err = fmt.Errorf("request error: %v | write error: %v", err, wErr)
-			}
-			// Log the error
-			logger.Info("can't create a multipart reader from request:", err)
+			logger.Errorf("Error getting request payload: %s", err.Error())
 			return
 		}
-		// Use the multipart reader to parse the request body
-		payload, _, err := plexwebhooks.Extract(multiPartReader)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			// Try to write the error as http body
-			_, wErr := w.Write([]byte(err.Error()))
-			if wErr != nil {
-				err = fmt.Errorf("request error: %v | write error: %v", err, wErr)
-			}
-			// Log the error
-			logger.Info("can't create a multipart reader from request:", err)
-			return
-		}
-		// spew.Dump("%#v\n", *payload)
 
-		if payload.Player.Title == os.Getenv("PLEX_CLIENT_NAME") {
-			group := hue.InitBonusRoom(logger, bridge)
-			switch event := payload.Event; event {
-			case "media.play", "media.resume":
-				hue.BonusRoomOn(logger, group)
-				logger.Infof("handling `%s` event", event)
-			case "media.stop", "media.pause":
-				hue.BonusRoomOff(logger, group)
-				logger.Infof("handling `%s` event", event)
-			default:
-				logger.Infof("ignoring `%s` event", event)
+		if payload.Player.Title == os.Getenv("BONUS_ROOM_PLEX_CLIENT_NAME") {
+			err := hue.EventHandler(logger, bridge, payload, os.Getenv("BONUS_ROOM_HUE"))
+			if err != nil {
+				logger.Errorf("Error handling event: %s", err.Error())
 			}
 		}
 	}
+}
+
+func getRequestPayload(w http.ResponseWriter, r *http.Request) (*plexwebhooks.Payload, error) {
+	multiPartReader, err := r.MultipartReader()
+	if err != nil {
+		if err == http.ErrNotMultipart || err == http.ErrMissingBoundary {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		_, wErr := w.Write([]byte(err.Error()))
+		if wErr != nil {
+			err = fmt.Errorf("request error: %v | write error: %v", err, wErr)
+		}
+		return nil, fmt.Errorf("can't create a multipart reader from request: %s", err)
+	}
+
+	payload, _, err := plexwebhooks.Extract(multiPartReader)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, wErr := w.Write([]byte(err.Error()))
+		if wErr != nil {
+			err = fmt.Errorf("request error: %v | write error: %v", err, wErr)
+		}
+		return nil, fmt.Errorf("can't create a multipart reader from request: %s", err)
+	}
+	return payload, nil
 }

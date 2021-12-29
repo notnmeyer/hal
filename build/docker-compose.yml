@@ -3,6 +3,7 @@ version: "3"
 services:
   hal:
     image: hal:latest
+    container_name: hal
     build:
       context: ../
       dockerfile: build/Dockerfile
@@ -12,3 +13,12 @@ services:
       - 7095:7095
     restart: on-failure
 
+  redis:
+    image: redis:latest
+    container_name: hal-redis
+    ports: [ "6379:6379" ]
+    volumes: [ "redis_data:/data" ]
+    restart: on-failure
+
+volumes:
+  redis_data: {}
