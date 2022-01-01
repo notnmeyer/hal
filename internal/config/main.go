@@ -5,6 +5,7 @@ import "os"
 type Config map[string]string
 
 func (cfg Config) New() *Config {
+	cfg = make(Config)
 	cfg["BONUS_ROOM_HUE"] = os.Getenv("BONUS_ROOM_HUE")
 	cfg["BONUS_ROOM_PLEX_CLIENT_NAME"] = os.Getenv("BONUS_ROOM_PLEX_CLIENT_NAME")
 	cfg["HUE_USER"] = os.Getenv("HUE_USER")
