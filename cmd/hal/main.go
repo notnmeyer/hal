@@ -3,27 +3,38 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 
+	"github.com/amimof/huego"
+	"github.com/notnmeyer/hal/internal/config"
 	"github.com/notnmeyer/hal/internal/hue"
 	l "github.com/notnmeyer/hal/internal/logger"
 	"github.com/notnmeyer/hal/internal/plex"
+	"go.uber.org/zap"
 )
 
-func main() {
-	logger := l.New()
+var cfg config.Config
+var logger *zap.SugaredLogger
+var bridge *huego.Bridge
+
+func init() {
+	logger = l.New()
 	logger.Info("Logger initialized")
 
-	bridge := hue.New()
-	logger.Info("Hue client initialized")
+	cfg = *cfg.New()
+	logger.Info("Config initialized")
 
+	bridge = hue.New()
+	logger.Info("Hue client initialized")
+}
+
+func main() {
 	// routes
 	http.HandleFunc("/", healthHandler)
 	http.HandleFunc("/healthcheck", healthHandler)
 	http.HandleFunc("/plex", plex.WebhookHandler(logger, bridge))
 
 	// start the server
-	listenOn := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	listenOn := fmt.Sprintf(":%s", cfg["PORT"])
 	logger.Infof("Listening on %s", listenOn)
 	http.ListenAndServe(listenOn, http.DefaultServeMux)
 }

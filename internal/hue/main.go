@@ -3,22 +3,27 @@ package hue
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/amimof/huego"
 	"github.com/go-redis/redis/v8"
 	"github.com/hekmon/plexwebhooks"
+	"github.com/notnmeyer/hal/internal/config"
 	"go.uber.org/zap"
 )
 
 var ctx = context.Background()
+var cfg config.Config
+
+func init() {
+	cfg = *cfg.New()
+}
 
 func New() *huego.Bridge {
 	var bridge, err = huego.Discover()
 	if err != nil {
 		panic(err.Error())
 	}
-	return huego.New(bridge.Host, os.Getenv("HUE_USER"))
+	return huego.New(bridge.Host, cfg["HUE_USER"])
 }
 
 func GetGroup(bridge *huego.Bridge, groupName string) (huego.Group, error) {
@@ -82,7 +87,7 @@ func GroupOff(group *huego.Group, event string) {
 }
 
 func redisClient() *redis.Client {
-	opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	opts, err := redis.ParseURL(cfg["REDIS_URL"])
 	if err != nil {
 		panic(err.Error())
 	}

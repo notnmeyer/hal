@@ -12,7 +12,7 @@ USER app
 ENV BONUS_ROOM_HUE="" \
     BONUS_ROOM_PLEX_CLIENT_NAME="" \
     HUE_USER=""  \
-    PORT="7950" \
+    PORT="7095" \
     REDIS_URL="redis://localhost:6379/0"
-EXPOSE 7950
+EXPOSE 7095
 CMD ["/usr/local/bin/hal"]
