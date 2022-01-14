@@ -32,6 +32,7 @@ func main() {
 	http.HandleFunc("/", healthHandler)
 	http.HandleFunc("/healthcheck", healthHandler)
 	http.HandleFunc("/plex", plex.WebhookHandler(logger, bridge))
+	http.HandleFunc("/plex/configure", plex.ConfigureHandler)
 
 	// start the server
 	listenOn := fmt.Sprintf(":%s", cfg["PORT"])
