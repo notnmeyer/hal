@@ -35,6 +35,8 @@ func main() {
 	http.HandleFunc("/plex", plex.WebhookHandler(logger, bridge))
 	http.HandleFunc("/plex/configure", plex.ConfigureHandler)
 
+	http.HandleFunc("/party", hue.Party(logger, bridge, cfg["BONUS_ROOM_HUE"]))
+
 	// start the server
 	listenOn := fmt.Sprintf(":%s", cfg["PORT"])
 	logger.Infof("Listening on %s", listenOn)
