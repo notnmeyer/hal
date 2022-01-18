@@ -3,6 +3,7 @@ package plex
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/amimof/huego"
 	"github.com/hekmon/plexwebhooks"
@@ -10,17 +11,33 @@ import (
 
 	"github.com/notnmeyer/hal/internal/config"
 	"github.com/notnmeyer/hal/internal/hue"
+	"github.com/notnmeyer/hal/internal/redisClient"
 )
 
-var cfg config.Config
-
-func init() {
-	cfg = *cfg.New()
-}
+var (
+	cfg   = *make(config.Config).New()
+	redis = *redisClient.New()
+)
 
 func WebhookHandler(logger *zap.SugaredLogger, bridge *huego.Bridge) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		// light.control is a bool indicating whether to react to webhook
+		// right now.
+		enabled, err := strconv.ParseBool(
+			redis.HGet("light.control", "enabled").Val(),
+		)
+
+		if err != nil {
+			logger.Errorf("Failed to parse enabled value: %s", err)
+			return
+		}
+
+		if !enabled {
+			logger.Info("Light control is disabled. Skipping event...")
+			return
+		}
 
 		// see docs/plex_payload_example.md
 		payload, err := getRequestPayload(w, r)

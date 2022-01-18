@@ -40,6 +40,10 @@ tasks:
     desc: docker-compose up
     cmds:
       - docker compose -f build/docker-compose.yml up -d --build --remove-orphans
+    sources:
+      - "**/*.go"
+      - go.mod
+      - build/*
 
   docker:down:
     desc: docker compose down
@@ -50,4 +54,3 @@ tasks:
     desc: docker compose {{.CLI_ARGS}}
     cmds:
       - docker compose -f build/docker-compose.yml {{.CLI_ARGS}}
-    
